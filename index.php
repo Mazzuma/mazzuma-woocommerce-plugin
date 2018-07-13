@@ -21,15 +21,14 @@ function woocommerce_cyst_mazzuma_init()
             $this->id            = 'mazzuma';
             $this->medthod_title = 'Mazzuma';
             $this->has_fields    = false;
-            $this->icon          = plugins_url() . "/mazzuma/mazzuma-pay.png";
+            $this->icon          = plugins_url('mazzuma-pay.png' ,__FILE__ );
             
             $this->init_form_fields();
             $this->init_settings();
-            //print_r($this->settings);
-            $this->title            = $this->get_option('title');
-            $this->description      = $this->get_option('description');
-            $this->api_key          = $this->get_option('api_key');
-            $this->redirect_page_id = $this->get_option('redirect_page_id');
+            $this->title            = sanitize_text_field($this->get_option('title') );
+            $this->description      = sanitize_text_field($this->get_option('description') );
+            $this->api_key          = sanitize_text_field($this->get_option('api_key') );
+            $this->redirect_page_id = sanitize_text_field($this->get_option('redirect_page_id') );
             $this->liveURL          = 'https://secure.teamcyst.com/api_call.php';
             $this->payURL           = 'https://secure.teamcyst.com/index.php?token=';
 			$this->merchant_id		= 'Merchant 11';
@@ -85,7 +84,7 @@ function woocommerce_cyst_mazzuma_init()
                 'api_key' => array(
                     'title' => __('API Key', 'cyst'),
                     'type' => 'text',
-                    'description' => __('This is the API Key generated at the Mazzuma Dashboard."')
+                    'description' => __('This is the API Key generated at the Mazzuma Dashboard. Visit https://dashboard.mazzuma.com to view your API Key"')
                 ),
                 
                 'redirect_page_id' => array(
@@ -122,8 +121,6 @@ function woocommerce_cyst_mazzuma_init()
             echo $this->generate_mazzuma_form($order);
         }
         
-       
-
         
         function genPayURL($orderParams){
              
@@ -131,12 +128,12 @@ function woocommerce_cyst_mazzuma_init()
             $payload = array(
                 "success_url" => ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id),
                 "price" => $orderParams->get_total(),
-                "orderID" => $orderParams->get_parent_id(),
+                "orderID" => $orderParams->get_id(),
                 "apikey" => $this->api_key
             );
 
             
-            
+            error_log('Order payload: '.print_r($payload, true));
 
             $payload = json_encode($payload);
             
@@ -149,11 +146,40 @@ function woocommerce_cyst_mazzuma_init()
             $hash        = hash_hmac('sha256', $payload, $privateHash);
             
             $headers = array(
-                'Api-Auth-Token: ' . $publicHash,
-                'Data-Token: ' . $hash
+                'Api-Auth-Token' => $publicHash,
+                'Data-Token' => $hash
             );
-            
-            $curl = curl_init();
+             
+            $args = array(
+                'body' => http_build_query(array("data" => $payload)),
+                'timeout' => '5',
+                'redirection' => '5',
+                'httpversion' => '1.0',
+                'blocking' => true,
+                'headers' => $headers,
+                'cookies' => array()
+            );
+
+            error_log('Request payload: '.print_r($args, true));
+             
+            $response = wp_remote_post( $this->liveURL, $args );
+
+            error_log('Response: '.print_r($response, true));
+
+            $responseBody = $response["body"];
+            $responseCode =  wp_remote_retrieve_response_code( $response );
+            error_log('Response Body: '.print_r($responseBody, true));
+
+            if($responseCode != 200 || $responseBody === false){
+                return false;
+            }else{
+                $responseBody = json_decode($responseBody, true);
+                $responseString = $responseBody["url"];
+                $payURL = $this->payURL.$responseString;
+                return $payURL;
+            }
+
+           /*  $curl = curl_init();
             curl_setopt_array($curl, array(
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_URL => $this->liveURL,
@@ -175,7 +201,7 @@ function woocommerce_cyst_mazzuma_init()
                 $payURL = $this->payURL.$responseString;
                 curl_close($curl);
                 return $payURL;
-            }
+            } */
             
 
 
@@ -186,6 +212,7 @@ function woocommerce_cyst_mazzuma_init()
          **/
         function process_payment($order_id)
         {
+            error_log('----------------Processing Order----------------');
 			
             global $woocommerce;
             $order = new WC_Order($order_id);
@@ -205,6 +232,7 @@ function woocommerce_cyst_mazzuma_init()
                     'redirect' => $result
                 );  
             }
+            error_log('----------------Order Processing Ended----------------');
 			
 
         }
@@ -225,9 +253,9 @@ function woocommerce_cyst_mazzuma_init()
                 if ($order_id != '') {
                     try {
                         $order       = new WC_Order($order_id);
-                        $merchant_id = $_REQUEST['key'];
-                        $amount      = $_REQUEST['Amount'];
-                        $hash        = $_REQUEST['hash'];
+                        $merchant_id = sanitize_text_field( $_REQUEST['key'] );
+                        $amount      = sanitize_text_field($_REQUEST['Amount'] );
+                        $hash        = sanitize_text_field($_REQUEST['hash'] );
                         
                         $status      = $_REQUEST['status'];
                         $productinfo = "Order $order_id";
