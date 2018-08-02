@@ -132,8 +132,6 @@ function woocommerce_cyst_mazzuma_init()
                 "apikey" => $this->api_key
             );
 
-            
-            error_log('Order payload: '.print_r($payload, true));
 
             $payload = json_encode($payload);
             
@@ -160,15 +158,12 @@ function woocommerce_cyst_mazzuma_init()
                 'cookies' => array()
             );
 
-            error_log('Request payload: '.print_r($args, true));
              
             $response = wp_remote_post( $this->liveURL, $args );
 
-            error_log('Response: '.print_r($response, true));
 
             $responseBody = $response["body"];
             $responseCode =  wp_remote_retrieve_response_code( $response );
-            error_log('Response Body: '.print_r($responseBody, true));
 
             if($responseCode != 200 || $responseBody === false){
                 return false;
@@ -179,32 +174,6 @@ function woocommerce_cyst_mazzuma_init()
                 return $payURL;
             }
 
-           /*  $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_URL => $this->liveURL,
-                CURLOPT_POST  => true,
-                CURLOPT_POSTFIELDS => http_build_query(array("data" => $payload)),
-                CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_FAILONERROR => true
-            ));
-            
-            $responseString = curl_exec($curl);
-            error_log($responseString);
-
-            if($responseString === false){
-                curl_close($curl);
-                return false;
-            }else{
-                $responseString = json_decode($responseString, true);
-                $responseString = $responseString["url"];
-                $payURL = $this->payURL.$responseString;
-                curl_close($curl);
-                return $payURL;
-            } */
-            
-
-
         }
         
         /**
@@ -212,13 +181,11 @@ function woocommerce_cyst_mazzuma_init()
          **/
         function process_payment($order_id)
         {
-            error_log('----------------Processing Order----------------');
 			
             global $woocommerce;
             $order = new WC_Order($order_id);
             $result = $this->genPayURL($order);
             if($result === false){
-                error_log("There was an error while getting the payurl");
                 return array(
                     'result' => 'failure',
                     'redirect' =>  $woocommerce->cart->get_checkout_url()
@@ -232,7 +199,6 @@ function woocommerce_cyst_mazzuma_init()
                     'redirect' => $result
                 );  
             }
-            error_log('----------------Order Processing Ended----------------');
 			
 
         }
