@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Mazzuma Payment Gateway
 Plugin URI: https://mazzuma.com
 Description: Mazzuma Payment gateway for WooCommerce
-Version: 1.1
+Version: 1.1.1
 Author: CYST Company Limited
 Author URI: https://teamcyst.com
 */

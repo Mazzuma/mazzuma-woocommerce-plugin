@@ -26,5 +26,10 @@ Add the API key generated from the dashboard, and any other appropriate details.
 
 Once done, hit save.
 
+== Screenshots ==
+1. Enabling the plugin in WooCommerce.
+2. Plugin configuration page.
+3. The Mazzuma payment page.
+
 == Frequently Asked Questions ==
 Visit https://mazzuma.com/faq/FAQ.html for our FAQs.
