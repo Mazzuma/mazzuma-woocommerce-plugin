@@ -1,0 +1,2 @@
+This is the main development repo for the Mazzuma WooCommerce plugin. 
+For production use in an online WooCommerce store, it is recommended that you use the [plugin from the WordPress plugin directory](https://wordpress.org/plugins/woo-mazzuma-payment-gateway/) , not these files. 
