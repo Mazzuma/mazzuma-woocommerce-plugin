@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WooCommerce Mazzuma Payment Gateway
-Plugin URI: https:///mazzuma.teamcyst.com
-Description: Mazzuma Payment gateway for woocommerce
+Plugin URI: https://mazzuma.com
+Description: Mazzuma Payment gateway for WooCommerce
 Version: 1.1
 Author: CYST Company Limited
-Author URI: https://mazzuma.teamcyst.com
+Author URI: https://teamcyst.com
 */
 add_action('plugins_loaded', 'woocommerce_cyst_mazzuma_init', 0);
 function woocommerce_cyst_mazzuma_init()
@@ -20,13 +20,14 @@ function woocommerce_cyst_mazzuma_init()
         {
             $this->id            = 'mazzuma';
             $this->medthod_title = 'Mazzuma';
+            $this->method_description = 'Recieve Ghanaian mobile money payments in your shop. ';
             $this->has_fields    = false;
             $this->icon          = plugins_url('mazzuma-pay.png' ,__FILE__ );
             
             $this->init_form_fields();
             $this->init_settings();
-            $this->title            = sanitize_text_field($this->get_option('title') );
-            $this->description      = sanitize_text_field($this->get_option('description') );
+            $this->title            = sanitize_text_field($this->get_option('title'), 'Mazzuma' );
+            $this->description      = sanitize_text_field($this->get_option('description'), 'Mazzuma Mobile Money Payment gateway for WooCommerce' );
             $this->api_key          = sanitize_text_field($this->get_option('api_key') );
             $this->redirect_page_id = sanitize_text_field($this->get_option('redirect_page_id') );
             $this->liveURL          = 'https://secure.teamcyst.com/api_call.php';
@@ -84,14 +85,14 @@ function woocommerce_cyst_mazzuma_init()
                 'api_key' => array(
                     'title' => __('API Key', 'cyst'),
                     'type' => 'text',
-                    'description' => __('This is the API Key generated at the Mazzuma Dashboard. Visit https://dashboard.mazzuma.com to view your API Key"')
+                    'description' => __('This is the API Key generated at the Mazzuma Dashboard. Visit https://dashboard.mazzuma.com to view your API Key."')
                 ),
                 
                 'redirect_page_id' => array(
                     'title' => __('Return Page'),
                     'type' => 'select',
                     'options' => $this->get_pages('Select Page'),
-                    'description' => "URL of success page"
+                    'description' => "URL of success page. This is where your customers would be returned after the payment is made."
                 )
             );
         }
@@ -100,6 +101,7 @@ function woocommerce_cyst_mazzuma_init()
         {
             echo '<h3>' . __('Mazzuma Payment Gateway', 'cyst') . '</h3>';
             echo '<p>' . __('Receive payments mobile money payments online using Mazzuma') . '</p>';
+            echo '<p>' . __('As a first step to use the plugin, kindly fill out our <a target="_blank" href="https://mazzuma.com/verify">developer verification form.</a>. <br> Access to receive payments in the plugin would be granted after details have bene verified. ' ) . '</p>';
             echo '<table class="form-table">';
             // Generate the HTML For the settings form.
             $this->generate_settings_html();
